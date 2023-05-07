@@ -94,12 +94,12 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	@EventHandler
-	public void onInventoryClick(InventoryClickEvent e) {
-		if(e.getClickedInventory() != null &&
-			e.getClickedInventory().getHolder() != null &&
-			e.getClickedInventory().getHolder() instanceof GUI gui) {
+	public void onInventoryClick(InventoryClickEvent event) {
+		if(event.getClickedInventory() != null &&
+			event.getClickedInventory().getHolder() != null &&
+			event.getClickedInventory().getHolder() instanceof GUI gui) {
 
-			gui.onInventoryClick(e);
+			gui.onInventoryClick(event);
 		}
 	}
 
@@ -172,8 +172,8 @@ public class Main extends JavaPlugin implements Listener {
 		return displayItem;
 	}
 
-	private boolean isPlacingTPInThisDimensionAllowed(Location l) {
-		World.Environment dimension = l.getWorld().getEnvironment();
+	private boolean isPlacingTPInThisDimensionAllowed(Location location) {
+		World.Environment dimension = location.getWorld().getEnvironment();
 		if(dimension == World.Environment.NORMAL && !Options.ALLOW_TP_IN_OVERWORLD) return false;
 		if(dimension == World.Environment.NETHER && !Options.ALLOW_TP_IN_NETHER) return false;
 		if(dimension == World.Environment.THE_END && !Options.ALLOW_TP_IN_END) return false;

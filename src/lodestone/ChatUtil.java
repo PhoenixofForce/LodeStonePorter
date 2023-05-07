@@ -19,22 +19,22 @@ public class ChatUtil {
 	
 	public static final String ERROR_NOT_ENOUGH_PERMISSIONS = "You do not have permission to perform this command!";
 	
-	public static void sendMessage(CommandSender p, String message) {
-		p.sendMessage(getPluginPrefix() + COMMAND_COLOR + message);
+	public static void sendMessage(CommandSender receiver, String message) {
+		receiver.sendMessage(getPluginPrefix() + COMMAND_COLOR + message);
 	}
 	
-	public static void sendMessageWithTooltip(CommandSender p, String message, String tooltip) {
+	public static void sendMessageWithTooltip(CommandSender receiver, String message, String tooltip) {
 		TextComponent text = new TextComponent(getPluginPrefix() + COMMAND_COLOR + message);
 		text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(tooltip)));
-		p.spigot().sendMessage(text);
+		receiver.spigot().sendMessage(text);
 	}
 	
 	public static void sendMessage(String message) {
 		Bukkit.broadcastMessage(getPluginPrefix() + COMMAND_COLOR + message);
 	}
 	
-	public static void sendErrorMessage(CommandSender p, String message) {
-		p.sendMessage(getPluginPrefix() + ERROR_COLOR + message);
+	public static void sendErrorMessage(CommandSender receiver, String message) {
+		receiver.sendMessage(getPluginPrefix() + ERROR_COLOR + message);
 	}
 	
 	public static void sendErrorMessage(String message) {

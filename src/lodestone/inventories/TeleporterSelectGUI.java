@@ -39,11 +39,11 @@ public class TeleporterSelectGUI implements GUI {
     }
 
     @Override
-    public void onInventoryClick(InventoryClickEvent e) {
-        e.setCancelled(true);
-        Player player = (Player) e.getWhoClicked();
+    public void onInventoryClick(InventoryClickEvent event) {
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
 
-        int slot = e.getSlot();
+        int slot = event.getSlot();
         if(slot < 0) return;
 
         if(slot == 0) Main.openTeleportSelector(player, offset - 8);
@@ -89,7 +89,7 @@ public class TeleporterSelectGUI implements GUI {
         //TODO: item for scrolling
         //TODO: display page in title
 
-        Inventory inv = Bukkit.createInventory(this, 9, ChatColor.DARK_AQUA +  "Select Teleporter");
+        Inventory inventory = Bukkit.createInventory(this, 9, ChatColor.DARK_AQUA +  "Select Teleporter");
         for(int i = 1; i < 8; i++) {
             int index = i - 1 + offset;
             if(index >= teleporters.size()) break;
@@ -105,15 +105,15 @@ public class TeleporterSelectGUI implements GUI {
                 if(distance > Options.MAX_TELEPORT_DISTANCE && Options.MAX_TELEPORT_DISTANCE >= 0) distanceToPlayer = "Too far";
             }
 
-            ItemStack item = currentTeleporter.displayItem().clone();
-            ItemChanger.addLore(item, ChatColor.GRAY + distanceToPlayer);
+            ItemStack teleportIcon = currentTeleporter.displayItem().clone();
+            ItemChanger.addLore(teleportIcon, ChatColor.GRAY + distanceToPlayer);
             if(Options.PAY_FOR_TELEPORT && !(player.hasPermission("ignoreCosts") || player.getGameMode() == GameMode.CREATIVE))
-                ItemChanger.addLore(item, ChatColor.BOLD.toString() + ChatColor.RED + "Costs " + calculatePrice(currentTeleporter) + " " + ItemChanger.getName(new ItemStack(Options.CURRENCY)));
+                ItemChanger.addLore(teleportIcon, ChatColor.BOLD.toString() + ChatColor.RED + "Costs " + calculatePrice(currentTeleporter) + " " + ItemChanger.getName(new ItemStack(Options.CURRENCY)));
 
-            inv.setItem(i, item);
+            inventory.setItem(i, teleportIcon);
         }
 
-        return inv;
+        return inventory;
     }
 
     private double calculateDistance(Teleporter tp) {

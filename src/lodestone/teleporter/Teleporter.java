@@ -10,12 +10,12 @@ public record Teleporter (
 		String owner
 	) {
 
-	public boolean isOwner(Player p) {
-		return owner.equals(p.getUniqueId().toString());
+	public boolean isOwner(Player player) {
+		return owner.equals(player.getUniqueId().toString());
 	}
 
-	public boolean sameDimension(Location l) {
-		return l.getWorld().getEnvironment() == location.getWorld().getEnvironment();
+	public boolean sameDimension(Location location) {
+		return location.getWorld().getEnvironment() == this.location.getWorld().getEnvironment();
 	}
 
 }

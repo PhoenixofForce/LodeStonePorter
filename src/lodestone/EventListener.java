@@ -24,39 +24,39 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void onPistonExtend(BlockPistonExtendEvent e) {
-        for(int i = e.getBlocks().size() - 1; i >= 0; i--) {
-            Block b = e.getBlocks().get(i);
+    public void onPistonExtend(BlockPistonExtendEvent event) {
+        for(int i = event.getBlocks().size() - 1; i >= 0; i--) {
+            Block block = event.getBlocks().get(i);
 
-            if(blockDestroyed(b.getLocation(), Optional.empty())) {
-                e.getBlocks().remove(i);
+            if(blockDestroyed(block.getLocation(), Optional.empty())) {
+                event.getBlocks().remove(i);
             }
         }
     }
 
     @EventHandler
-    public void onPistonRetract(BlockPistonRetractEvent e) {
-        for(int i = e.getBlocks().size() - 1; i >= 0; i--) {
-            Block b = e.getBlocks().get(i);
+    public void onPistonRetract(BlockPistonRetractEvent event) {
+        for(int i = event.getBlocks().size() - 1; i >= 0; i--) {
+            Block block = event.getBlocks().get(i);
 
-            if(blockDestroyed(b.getLocation(), Optional.empty())) {
-                e.getBlocks().remove(i);
+            if(blockDestroyed(block.getLocation(), Optional.empty())) {
+                event.getBlocks().remove(i);
             }
         }
     }
 
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent e) {
-        e.setCancelled(blockDestroyed(e.getBlock().getLocation(), Optional.of(e.getPlayer())));
+    public void onBlockBreak(BlockBreakEvent event) {
+        event.setCancelled(blockDestroyed(event.getBlock().getLocation(), Optional.of(event.getPlayer())));
     }
 
     @EventHandler
-    public void onExplodeEvent(EntityExplodeEvent e) {
-        for(int i = e.blockList().size() - 1; i >= 0; i--) {
-            Block b = e.blockList().get(i);
+    public void onExplodeEvent(EntityExplodeEvent event) {
+        for(int i = event.blockList().size() - 1; i >= 0; i--) {
+            Block block = event.blockList().get(i);
 
-            if(blockDestroyed(b.getLocation(), Optional.empty())) {
-                e.blockList().remove(i);
+            if(blockDestroyed(block.getLocation(), Optional.empty())) {
+                event.blockList().remove(i);
             }
         }
     }
@@ -70,7 +70,7 @@ public class EventListener implements Listener {
     private boolean blockDestroyed(Location location, Optional<Player> player) {
         Optional<Teleporter> removedTp = teleportHandler.getByLocation(location);
 
-        if(!removedTp.isPresent()) return false;
+        if(removedTp.isEmpty()) return false;
 
         if(Options.ONLY_ALLOW_OWNER_TO_BREAK) {
             if(player.isPresent()) {

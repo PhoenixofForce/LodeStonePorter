@@ -61,7 +61,6 @@ public class TeleporterHandler {
     public void load(FileConfiguration config) {
         int count = (int) config.get("tpCount", 0);
 
-        ChatUtil.sendMessage(count + "");
         for(int i = 0; i < count; i++) {
             Location l = (Location) config.get("location_" + i);
             ItemStack s = (ItemStack) config.get("item_" + i);
