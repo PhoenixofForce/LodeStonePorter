@@ -1,7 +1,19 @@
 name: LodestonePorter
-version: 0.1
+version: 1.0
 author: PhoenixofForce
 api-version: 1.19
 main: lodestone.Main
-
 commands:
+permissions:
+  createTP:
+    description: Allows you to create teleporters.
+    default: true
+  breakAllTP:
+    description: Allows you to break teleporters from other player, ignoring config settings.
+    default: op
+  useTP:
+    description: Allows you to use teleporter.
+    default: true
+  ignoreCosts:
+    description: Allows you to ignore the costs set in the config
+    default: false

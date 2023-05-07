@@ -15,6 +15,10 @@ public class TeleporterHandler {
 
     public TeleporterHandler() { }
 
+    public List<Teleporter> getTeleporter() {
+        return teleporter;
+    }
+
     public void addTeleporter(Teleporter teleporter) {
         this.teleporter.add(teleporter);
     }

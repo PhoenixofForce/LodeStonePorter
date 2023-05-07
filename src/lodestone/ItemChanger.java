@@ -5,6 +5,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -28,6 +29,17 @@ public class ItemChanger {
         item.setItemMeta(meta);
 
         return item;
+    }
+
+    public static String getName(ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+
+        String name = meta.hasDisplayName()? meta.getDisplayName():
+                (meta.hasLocalizedName()? meta.getLocalizedName():
+                        Strings.capitalize(item.getType().toString().replace("_", " "))
+                );
+
+        return name;
     }
 
     public static ItemStack changeName(ItemStack item, Function<String, String> nameChanger) {
@@ -70,6 +82,7 @@ public class ItemChanger {
         ItemMeta meta = item.getItemMeta();
 
         List<String> lore = meta.getLore();
+        if(lore == null) lore = new ArrayList<>();
         lore.add(line);
         meta.setLore(lore);
 

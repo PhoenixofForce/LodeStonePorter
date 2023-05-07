@@ -2,6 +2,7 @@ package lodestone;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -41,6 +42,15 @@ public class ChatUtil {
 	}
 	
 	public static String getPluginPrefix() {
-		return SYMBOL_COLOR + "[" + PLUGIN_COLOR + "CustomChatColors" + SYMBOL_COLOR + "] " + COMMAND_COLOR; 
+		return SYMBOL_COLOR + "[" + PLUGIN_COLOR + PLUGIN_NAME + SYMBOL_COLOR + "] " + COMMAND_COLOR;
+	}
+
+	public static ChatColor getDimensionColor(Location l) {
+		return switch (l.getWorld().getEnvironment()) {
+			case NORMAL -> ChatColor.GREEN;
+			case NETHER -> ChatColor.DARK_RED;
+			case THE_END -> ChatColor.DARK_AQUA;
+			default -> ChatColor.DARK_PURPLE;
+		};
 	}
 }

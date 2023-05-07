@@ -72,10 +72,11 @@ public class EventListener implements Listener {
 
         if(!removedTp.isPresent()) return false;
 
-        if(Main.ONLY_ALLOW_OWNER_TO_BREAK) {
+        if(Options.ONLY_ALLOW_OWNER_TO_BREAK) {
             if(player.isPresent()) {
-                boolean sameOwner = player.get().getUniqueId().toString().equals(removedTp.get().owner());
-                if(!(sameOwner || player.get().isOp())) {
+                boolean sameOwner = removedTp.get().isOwner(player.get());
+                if(!(sameOwner || player.get().isOp() || player.get().hasPermission("breakAllTP"))) {
+                    ChatUtil.sendErrorMessage(player.get(), "This teleporter belongs to a different player!");
                     return true;
                 }
             } else {
@@ -84,10 +85,11 @@ public class EventListener implements Listener {
         }
 
         teleportHandler.deleteTeleporter(location);
-        if(Main.DROP_ITEM_ON_BREAK) {
+        if(Options.DROP_ITEM_ON_BREAK) {
             ItemStack droppedItem = removedTp.get().displayItem().clone();
             ItemChanger.setLore(droppedItem, new ArrayList<>());
             ItemChanger.removeEnchantmentGlow(droppedItem);
+            ItemChanger.changeName(droppedItem, e -> null);
 
             location.getWorld().dropItemNaturally(location, droppedItem);
         }

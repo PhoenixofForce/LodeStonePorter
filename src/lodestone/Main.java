@@ -24,22 +24,21 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin implements Listener {
 
 	/* TODO:
-	   - [ ] load booleans from config
-	   - [ ] add min teleport distance, max teleport distance
-	   - [ ] add min and max cost, currency
 	   - [ ] success effect
-	   - [ ] config if cross dimension teleport is allowed, price always max
-	   - [ ] allow teleporter in nether, overworld, end, custom
-	   - [ ] permissions for creating teleporter, breaking all teleporter
 	   - [ ] teleport selector with items for scrolling, display page in title, inventory larger?
-	   - [ ] config only show teleporter in same dimension
-	   - [ ] config only show teleporter created by player
-	   - [ ] chat messages
 	   - [ ] particles for active teleporter
+	   - [x] chat messages
+	   - [x] load booleans from config
+	   - [x] add min teleport distance, max teleport distance
+	   - [x] add min and max cost, currency
+	   - [x] config if cross dimension teleport is allowed, price always max
+	   - [x] allow teleporter in nether, overworld, end, custom
+	   - [x] permissions for creating teleporter, breaking all teleporter
+	   - [x] config only show teleporter created by player
+	   =>[ ] only allow to right click teleporter created by player?
+	   - [x] check tps on load
+	   - [x] allow interdimensional travel
 	 */
-
-	public static boolean DROP_ITEM_ON_BREAK = true;
-	public static boolean ONLY_ALLOW_OWNER_TO_BREAK = true;
 
 	public static final TeleporterHandler teleportHandler = new TeleporterHandler();
 	
@@ -50,11 +49,27 @@ public class Main extends JavaPlugin implements Listener {
 
 		Bukkit.getLogger().log(Level.INFO,  "___" + ChatUtil.PLUGIN_NAME + " v" + getDescription().getVersion() + "_".repeat(10));
 		Bukkit.getLogger().log(Level.INFO, "  Created by PhoenixofForce");
-		if(authors.size() > 1) Bukkit.getLogger().log(Level.INFO, "  Developed by " + authors.stream().reduce("", (s1, s2) -> s1 + ", " + s2).substring(2));
+		if(authors.size() > 1) Bukkit.getLogger().log(Level.INFO, "  Developed by " + authors.stream().reduce("", (s1, s2) -> s1 + ", " + s2).substring(2) + "\r\n");
 
 		Bukkit.getPluginManager().registerEvents(this, this);
 		Bukkit.getPluginManager().registerEvents(new EventListener(teleportHandler), this);
 		loadConfigFile();
+
+		Bukkit.getLogger().log(Level.INFO,  "Found " + teleportHandler.getAmount() + " teleporters, checking for corruption...");
+
+		//Check if teleporter still exist
+		for(int i = teleportHandler.getAmount() - 1; i >= 0; i--) {
+			Teleporter tp = teleportHandler.getByIndex(i);
+
+			if(tp.location().getBlock().getType() != Material.LODESTONE) {
+				teleportHandler.deleteTeleporter(tp.location());
+				Bukkit.getLogger().log(Level.INFO,
+						" - Teleporter " + ItemChanger.getName(tp.displayItem()) + " (" + tp.location().getBlockX() + ", " + tp.location().getBlockY() + ", " + tp.location().getBlockZ() + ") got corrupted and removed"
+				);
+			}
+		}
+
+		Bukkit.getLogger().log(Level.INFO,  "_".repeat(10) + ChatUtil.PLUGIN_NAME + " v" + getDescription().getVersion() + "_".repeat(3));
 	}
 	
 	@Override
@@ -65,11 +80,15 @@ public class Main extends JavaPlugin implements Listener {
 	
 	public void loadConfigFile() {
     	FileConfiguration config = getConfig();
+
+		Options.loadFromConfig(config);
 		teleportHandler.load(config);
     }
 	
 	public void saveConfigFile() {
 		FileConfiguration config = getConfig();
+
+		Options.saveToConfig(config);
 		teleportHandler.save(config);
 	    super.saveConfig();
 	}
@@ -98,30 +117,49 @@ public class Main extends JavaPlugin implements Listener {
 
 		//Open teleport menu
 		boolean teleporterExists = teleportHandler.contains(clickedLocation);
-		if((!player.isSneaking() || playerHoldItem.getAmount() <= 0) && teleporterExists) {
+		if(teleporterExists) {
+			//Exit when player is not allowed to use teleporter
+			if(!player.hasPermission("useTP")) {
+				ChatUtil.sendErrorMessage(player, "You do not have enough permissions to use this teleporter.");
+				return;
+			}
+
 			openTeleportSelector(player, 0);
 			return;
 		}
 		if(!player.isSneaking() || playerHoldItem.getAmount() <= 0 || teleporterExists) return;
 
+		//Exit when no permission for creating tp
+		if(!(player.hasPermission("createTP") || player.isOp())) {
+			ChatUtil.sendErrorMessage(player, "You do not have enough permissions to create a teleporter.");
+			return;
+		}
+
 		//Exit when holding compass
 		boolean playerHoldingCompass = playerHoldItem.getType() == Material.COMPASS;
 		if(playerHoldingCompass) return;
 
-		World.Environment dimension = clickedLocation.getWorld().getEnvironment();
-		String dimensionString = Strings.capitalize(dimension.name().replace("_", " "));
-
-		ChatColor dimensionColor = switch (dimension) {
-			case NORMAL -> ChatColor.GREEN;
-			case NETHER -> ChatColor.DARK_RED;
-			case THE_END -> ChatColor.DARK_AQUA;
-			default -> ChatColor.DARK_PURPLE;
-		};
-
-		dimensionString = dimensionColor.toString() + ChatColor.BOLD + dimensionString + ChatColor.RESET;
+		if(!isPlacingTPInThisDimensionAllowed(clickedLocation)) {
+			ChatUtil.sendErrorMessage(player, "Creating teleporter in this dimension is not allowed.");
+		}
 
 		//Creating teleporter
-		ItemStack displayItem = playerHoldItem.clone();
+		ItemStack displayItem = createTeleporterIcon(playerHoldItem.clone(), clickedLocation, player);
+
+		playerHoldItem.setAmount(playerHoldItem.getAmount() - 1);
+		if(playerHoldItem.getAmount() == 0) player.getInventory().setItemInMainHand(null);
+
+		ChatUtil.sendMessage(player, "Successfully created teleporter");
+		teleportHandler.addTeleporter(new Teleporter(displayItem, event.getClickedBlock().getLocation(), player.getUniqueId().toString()));
+		event.setCancelled(true);
+		//TODO: play reward effect
+	}
+
+	private ItemStack createTeleporterIcon(ItemStack item, Location clickedLocation, Player player) {
+		String dimensionString = Strings.capitalize(clickedLocation.getWorld().getEnvironment().name());
+		dimensionString = ChatUtil.getDimensionColor(clickedLocation).toString() + ChatColor.BOLD + dimensionString + ChatColor.RESET;
+
+		ItemStack displayItem = item.clone();
 		displayItem.setAmount(1);
 
 		ItemChanger.changeName(displayItem, name -> ChatColor.AQUA + (ChatColor.stripColor(name)));
@@ -131,12 +169,16 @@ public class Main extends JavaPlugin implements Listener {
 				ChatColor.GRAY + "Point created by " + ChatColor.ITALIC + player.getDisplayName()
 		));
 
-		playerHoldItem.setAmount(playerHoldItem.getAmount() - 1);
-		if(playerHoldItem.getAmount() == 0) player.getInventory().setItemInMainHand(null);
+		return displayItem;
+	}
 
-		teleportHandler.addTeleporter(new Teleporter(displayItem, event.getClickedBlock().getLocation(), player.getUniqueId().toString()));
-		event.setCancelled(true);
-		//TODO: play reward effect
+	private boolean isPlacingTPInThisDimensionAllowed(Location l) {
+		World.Environment dimension = l.getWorld().getEnvironment();
+		if(dimension == World.Environment.NORMAL && !Options.ALLOW_TP_IN_OVERWORLD) return false;
+		if(dimension == World.Environment.NETHER && !Options.ALLOW_TP_IN_NETHER) return false;
+		if(dimension == World.Environment.THE_END && !Options.ALLOW_TP_IN_END) return false;
+		if(dimension == World.Environment.CUSTOM && !Options.ALLOW_TP_IN_CUSTOM) return false;
+		return true;
 	}
 
 	public static void openTeleportSelector(Player player, int offset) {
