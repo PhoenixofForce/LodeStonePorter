@@ -1,5 +1,6 @@
 package lodestone;
 
+import lodestone.inventories.GUI;
 import lodestone.teleporter.Teleporter;
 import lodestone.teleporter.TeleporterHandler;
 import org.bukkit.Location;
@@ -11,6 +12,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -21,6 +23,16 @@ public class EventListener implements Listener {
     private TeleporterHandler teleportHandler;
     public EventListener(TeleporterHandler teleporterHandler) {
         this.teleportHandler = teleporterHandler;
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if(event.getInventory() != null &&
+                event.getInventory().getHolder() != null &&
+                event.getInventory().getHolder() instanceof GUI gui) {
+
+            gui.onInventoryClick(event);
+        }
     }
 
     @EventHandler

@@ -41,6 +41,12 @@ public class Main extends JavaPlugin implements Listener {
 	   =>[ ] only allow to right click teleporter created by player?
 	   - [x] check tps on load
 	   - [x] allow interdimensional travel
+	   - [ ] filter for menu
+	   - [ ] fix permissions in plugin.yml
+	   - [ ] save teleporter in own file
+	   =>[ ] only save config when changed/ not on reload, restart
+	   =>[ ] provide default config with explanation
+	   - [ ] i18n
 	 */
 
 	public static final TeleporterHandler teleportHandler = new TeleporterHandler();
@@ -94,16 +100,6 @@ public class Main extends JavaPlugin implements Listener {
 		Options.saveToConfig(config);
 		teleportHandler.save(config);
 	    super.saveConfig();
-	}
-
-	@EventHandler
-	public void onInventoryClick(InventoryClickEvent event) {
-		if(event.getInventory() != null &&
-			event.getInventory().getHolder() != null &&
-			event.getInventory().getHolder() instanceof GUI gui) {
-
-			gui.onInventoryClick(event);
-		}
 	}
 
 	@EventHandler
@@ -209,6 +205,8 @@ public class Main extends JavaPlugin implements Listener {
 		return true;
 	}
 
+	//TODO: Make this better, cleaner
+
 	public static void openTeleportSelector(Player player, int offset) {
 		openTeleportSelector(player, offset, SortingStyles.CREATION_DATE);
 	}
@@ -218,6 +216,10 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	public static void openTeleportSelector(Player player, int offset, SortingStyles sortingStyles, boolean fromInventory) {
-		player.openInventory(new TeleporterSelectGUI(player, offset, sortingStyles, fromInventory).getInventory());
+		player.openInventory(new TeleporterSelectGUI(player, offset, sortingStyles, fromInventory, -1).getInventory());
+	}
+
+	public static void openTeleportSelector(Player player, int offset, SortingStyles sortingStyles, boolean fromInventory, int playerFilterIndex) {
+		player.openInventory(new TeleporterSelectGUI(player, offset, sortingStyles, fromInventory, playerFilterIndex).getInventory());
 	}
 }
