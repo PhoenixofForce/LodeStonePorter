@@ -47,7 +47,7 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        event.setCancelled(blockDestroyed(event.getBlock().getLocation(), Optional.of(event.getPlayer())));
+        if(blockDestroyed(event.getBlock().getLocation(), Optional.of(event.getPlayer()))) event.setCancelled(true);
     }
 
     @EventHandler

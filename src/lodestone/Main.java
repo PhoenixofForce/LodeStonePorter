@@ -4,11 +4,14 @@ import java.util.List;
 import java.util.logging.Level;
 
 import lodestone.inventories.GUI;
+import lodestone.inventories.SortingStyles;
 import lodestone.inventories.TeleporterSelectGUI;
 import lodestone.teleporter.Teleporter;
 import lodestone.teleporter.TeleporterHandler;
 
 import org.bukkit.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -95,9 +98,9 @@ public class Main extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent event) {
-		if(event.getClickedInventory() != null &&
-			event.getClickedInventory().getHolder() != null &&
-			event.getClickedInventory().getHolder() instanceof GUI gui) {
+		if(event.getInventory() != null &&
+			event.getInventory().getHolder() != null &&
+			event.getInventory().getHolder() instanceof GUI gui) {
 
 			gui.onInventoryClick(event);
 		}
@@ -155,6 +158,31 @@ public class Main extends JavaPlugin implements Listener {
 		//TODO: play reward effect
 	}
 
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String commandlabel, String[] args) {
+
+		if (commandlabel.equalsIgnoreCase("tp")) {
+			if(!(sender instanceof Player)) {
+				ChatUtil.sendErrorMessage(sender, "You are not a player");
+				return true;
+			}
+
+			boolean isAllowed = (sender.hasPermission("useTP") && sender.hasPermission("useTPAnywhere") && Options.ALLOW_TP_COMMAND) || sender.isOp();
+			if(!isAllowed){
+				ChatUtil.sendErrorMessage(sender, "You do not have enough permissions for this action");
+				return true;
+			}
+
+
+			Player playerSender = (Player) sender;
+			openTeleportSelector(playerSender, 0, SortingStyles.CREATION_DATE, true);
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private ItemStack createTeleporterIcon(ItemStack item, Location clickedLocation, Player player) {
 		String dimensionString = Strings.capitalize(clickedLocation.getWorld().getEnvironment().name());
 		dimensionString = ChatUtil.getDimensionColor(clickedLocation).toString() + ChatColor.BOLD + dimensionString + ChatColor.RESET;
@@ -182,6 +210,14 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	public static void openTeleportSelector(Player player, int offset) {
-		player.openInventory(new TeleporterSelectGUI(player, offset).getInventory());
+		openTeleportSelector(player, offset, SortingStyles.CREATION_DATE);
+	}
+
+	public static void openTeleportSelector(Player player, int offset, SortingStyles sortingStyles) {
+		openTeleportSelector(player, offset, SortingStyles.CREATION_DATE, false);
+	}
+
+	public static void openTeleportSelector(Player player, int offset, SortingStyles sortingStyles, boolean fromInventory) {
+		player.openInventory(new TeleporterSelectGUI(player, offset, sortingStyles, fromInventory).getInventory());
 	}
 }

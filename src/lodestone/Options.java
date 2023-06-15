@@ -17,6 +17,9 @@ public class Options {
     public static boolean ALLOW_TP_IN_END = true;
     public static boolean ALLOW_TP_IN_CUSTOM = false;
 
+    public static float TP_COMMAND_COST = 0.25f;
+    public static boolean ALLOW_TP_COMMAND = true;
+
     public static boolean PRIVATE_TP = false;
 
     public static boolean PAY_FOR_TELEPORT = true;
@@ -37,6 +40,8 @@ public class Options {
         ALLOW_TP_IN_NETHER = (boolean) config.get("tpsNether", ALLOW_TP_IN_NETHER);
         ALLOW_TP_IN_END = (boolean) config.get("tpsEnd", ALLOW_TP_IN_END);
         ALLOW_TP_IN_CUSTOM = (boolean) config.get("tpsCustom", ALLOW_TP_IN_CUSTOM);
+        TP_COMMAND_COST = (float) ((double) config.get("tpCommandCost", TP_COMMAND_COST));
+        ALLOW_TP_COMMAND = (boolean) config.get("tpCommand", ALLOW_TP_COMMAND);
         PRIVATE_TP = (boolean) config.get("privateTps", PRIVATE_TP);
         PAY_FOR_TELEPORT = (boolean) config.get("payForTP", PAY_FOR_TELEPORT);
         CURRENCY = Material.valueOf((String) config.get("currency", CURRENCY));
@@ -57,6 +62,8 @@ public class Options {
         config.set("tpsNether", ALLOW_TP_IN_NETHER);
         config.set("tpsEnd", ALLOW_TP_IN_END);
         config.set("tpsCustom", ALLOW_TP_IN_CUSTOM);
+        config.set("tpCommandCost", TP_COMMAND_COST);
+        config.set("tpsCustom", ALLOW_TP_COMMAND);
         config.set("privateTps", PRIVATE_TP);
         config.set("payForTP", PAY_FOR_TELEPORT);
         config.set("currency", CURRENCY.toString());

@@ -54,7 +54,7 @@ public class TeleporterHandler {
         for(int i = 0; i < getAmount(); i++) {
             config.set("location_" + i, getByIndex(i).location());
             config.set("item_" + i, getByIndex(i).displayItem());
-            config.set("owner" + i, getByIndex(i).owner());
+            config.set("owner_" + i, getByIndex(i).owner());
         }
     }
 
