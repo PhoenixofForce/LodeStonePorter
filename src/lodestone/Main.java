@@ -43,8 +43,9 @@ public class Main extends JavaPlugin implements Listener {
 	   - [x] allow interdimensional travel
 	   - [ ] filter for menu
 	   - [ ] fix permissions in plugin.yml
-	   - [ ] save teleporter in own file
-	   =>[ ] only save config when changed/ not on reload, restart
+	   - [x] save teleporter in own file
+	   =>[x] only save config when changed/ not on reload, restart
+	   =>[ ] only save tps when changed
 	   =>[ ] provide default config with explanation
 	   - [ ] i18n
 	 */
@@ -63,6 +64,7 @@ public class Main extends JavaPlugin implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, this);
 		Bukkit.getPluginManager().registerEvents(new EventListener(teleportHandler), this);
 		loadConfigFile();
+		saveConfigFile();
 
 		Bukkit.getLogger().log(Level.INFO,  "Found " + teleportHandler.getAmount() + " teleporters, checking for corruption...");
 
@@ -84,7 +86,7 @@ public class Main extends JavaPlugin implements Listener {
 	@Override
 	public void onDisable() {
 		HandlerList.unregisterAll((Plugin) this);
-		saveConfigFile();
+		teleportHandler.save(getConfig());
 	}
 	
 	public void loadConfigFile() {
@@ -157,7 +159,7 @@ public class Main extends JavaPlugin implements Listener {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String commandlabel, String[] args) {
 
-		if (commandlabel.equalsIgnoreCase("tp")) {
+		if (commandlabel.equalsIgnoreCase("lp")) {
 			if(!(sender instanceof Player)) {
 				ChatUtil.sendErrorMessage(sender, "You are not a player");
 				return true;

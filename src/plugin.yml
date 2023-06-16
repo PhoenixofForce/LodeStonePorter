@@ -4,9 +4,9 @@ author: PhoenixofForce
 api-version: 1.19
 main: lodestone.Main
 commands:
-  tp:
+  lp:
     description: Opens the tp menu from anywhere in the world
-    usage: /tp
+    usage: /lp
 
 permissions:
   createTP:

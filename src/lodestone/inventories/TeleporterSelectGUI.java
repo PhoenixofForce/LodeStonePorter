@@ -2,17 +2,15 @@ package lodestone.inventories;
 
 import lodestone.*;
 import lodestone.teleporter.Teleporter;
+import lodestone.teleporter.TeleporterHandler;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import javax.swing.text.html.Option;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class TeleporterSelectGUI implements GUI {
@@ -53,14 +51,11 @@ public class TeleporterSelectGUI implements GUI {
                 .filter(tp ->
                         Options.ALLOW_INTERDIMENSIONAL_TRAVEL || tp.sameDimension(player.getLocation())
                 )
-                .filter(tp -> (currentPlayerFilter == -1 || Bukkit.getPlayer(UUID.fromString(tp.owner())).getName().equals(
-                        getPlayerNamesThatCreatedTeleporter().get(currentPlayerFilter)
-                )))
-                .sorted((o1, o2) -> switch (sortingStyles) {
-                    case CREATION_DATE -> 0;
-                    case PLAYER_NAME -> o1.owner().compareTo(o2.owner());
-                    case DISTANCE -> Double.compare(calculateDistance(o1), calculateDistance(o2));
-                })
+                .filter(tp ->
+                        currentPlayerFilter == -1 ||
+                                Main.teleportHandler.getCreatorList().get(currentPlayerFilter).equals(Bukkit.getPlayer(UUID.fromString(tp.owner())))
+                )
+                .sorted((o1, o2) -> sortingStyle.sort(player, o1, o2))
                 .toList();
 
         this.page = Math.max(0, page);
@@ -89,13 +84,13 @@ public class TeleporterSelectGUI implements GUI {
         else if(slot == PAGE_NEXT_INDEX && page < getMaxPage()) Main.openTeleportSelector(player, page+1, sortingStyle, openedFromCommand, currentPlayerFilter);
         else if(slot == SORTING_INDEX) Main.openTeleportSelector(player, page, sortingStyle.next(), openedFromCommand, currentPlayerFilter);
         else if (slot == PLAYER_FILTER_INDEX) {
-            List<String> playerNames = getPlayerNamesThatCreatedTeleporter();
+            List<OfflinePlayer> playerNames = Main.teleportHandler.getCreatorList();
             if(event.isShiftClick()) {
 
                 currentPlayerFilter = -1;
                 for(int i = 0; i < playerNames.size(); i++) {
-                    String s = playerNames.get(i);
-                    if(s.equals(player.getName())) {
+                    String s = playerNames.get(i).getName();
+                    if(s != null && s.equals(player.getName())) {
                         currentPlayerFilter = i;
                         break;
                     }
@@ -123,7 +118,7 @@ public class TeleporterSelectGUI implements GUI {
         boolean playerAndTPSameDimension = selectedTP.sameDimension(player.getLocation());
         if(!playerAndTPSameDimension && !Options.ALLOW_INTERDIMENSIONAL_TRAVEL) return;
 
-        double distance = calculateDistance(selectedTP);
+        double distance = TeleporterHandler.calculateDistance(selectedTP, player);
 
         boolean liesInAllowedWindow = distance >= Options.MIN_TELEPORT_DISTANCE && (Options.MAX_TELEPORT_DISTANCE <= 0 || distance <= Options.MAX_TELEPORT_DISTANCE);
         if(!liesInAllowedWindow) {
@@ -155,6 +150,8 @@ public class TeleporterSelectGUI implements GUI {
     public Inventory getInventory() {
         int offset = page * (3 * 9);
         Inventory inventory = Bukkit.createInventory(this, 9 * 5, ChatColor.DARK_GRAY +  "Select Teleporter (" + (page+1) + "/" + (getMaxPage() + 1) + ")");
+
+        //Insert teleporter items
         for(int i = 0; i < 27; i++) {
             int index = i + offset;
             if(index >= teleporters.size()) break;
@@ -163,7 +160,7 @@ public class TeleporterSelectGUI implements GUI {
             String distanceToPlayer = "???";
             if(currentTeleporter.sameDimension(player.getLocation())) {
                 int distance = (int) currentTeleporter.location().distance(player.getLocation());
-                distanceToPlayer = "" + distance;
+                distanceToPlayer = String.valueOf(distance);
                 distanceToPlayer += " blocks away";
 
                 if(distance < Options.MIN_TELEPORT_DISTANCE) distanceToPlayer = "Too close";
@@ -182,47 +179,50 @@ public class TeleporterSelectGUI implements GUI {
             inventory.setItem(i, teleportIcon);
         }
 
-        if(page > 0) {
+        if(page > 0) {  //Previous Page Item
             ItemStack backItem = new ItemStack(Material.ARROW);
             ItemChanger.changeName(backItem, name -> ChatColor.DARK_RED + "Page back");
             inventory.setItem(PAGE_BACK_INDEX, backItem);
         }
 
-        if(page < getMaxPage()) {
+        if(page < getMaxPage()) {   //Next Page Item
             ItemStack nextItem = new ItemStack(Material.ARROW);
             ItemChanger.changeName(nextItem, name -> ChatColor.DARK_RED + "Next Page");
             inventory.setItem(PAGE_NEXT_INDEX, nextItem);
         }
 
-        {
+        {//Sort Item
             ItemStack sortingItem = new ItemStack(Material.HOPPER);
             ItemChanger.changeName(sortingItem, name -> ChatColor.AQUA + "Sort");
             for(SortingStyles style: SortingStyles.values()) {
                 ChatColor color = style == sortingStyle? ChatColor.WHITE: ChatColor.GRAY;
                 String prefix = style == sortingStyle? "> ": "";
 
-                ItemChanger.addLore(sortingItem, color + prefix + style.toString().charAt(0) + style.toString().substring(1).toLowerCase());
+                String styleString = style.toString().charAt(0) + style.toString().substring(1).toLowerCase();
+                styleString = styleString.replace("_", " ");
+
+                ItemChanger.addLore(sortingItem, color + prefix + styleString);
             }
 
             inventory.setItem(SORTING_INDEX, sortingItem);
         }
 
-        {
+        {//Filter Player Item
             ItemStack playerFilterItem = new ItemStack(Material.PLAYER_HEAD);
             String playerName = "";
 
             if(currentPlayerFilter == -1) {
                 playerName = "None";
             } else {
-                List<String> player = getPlayerNamesThatCreatedTeleporter();
-                playerName = player.get(currentPlayerFilter);
+                List<OfflinePlayer> player = Main.teleportHandler.getCreatorList();
+                playerName = player.get(currentPlayerFilter).getName();
                 SkullMeta meta = (SkullMeta) playerFilterItem.getItemMeta();
-                meta.setOwningPlayer(Bukkit.getPlayer(player.get(currentPlayerFilter)));
+                meta.setOwningPlayer(player.get(currentPlayerFilter));
                 playerFilterItem.setItemMeta(meta);
             }
 
             ItemChanger.changeName(playerFilterItem, name -> ChatColor.AQUA + "Filter by Player");
-            ItemChanger.addLore(playerFilterItem, "" + ChatColor.GRAY + "Current Player: " + ChatColor.BOLD + playerName);
+            ItemChanger.addLore(playerFilterItem, ChatColor.GRAY + "Current Player: " + ChatColor.BOLD + playerName);
             ItemChanger.addLore(playerFilterItem, ChatColor.DARK_GRAY + "Left Click for next Player");
             ItemChanger.addLore(playerFilterItem, ChatColor.DARK_GRAY + "Shift Click for You");
             ItemChanger.addLore(playerFilterItem, ChatColor.DARK_GRAY + "Right Click to clear");
@@ -233,43 +233,12 @@ public class TeleporterSelectGUI implements GUI {
         return inventory;
     }
 
-    public boolean matchesFreeModel(Teleporter teleporter) {
-        if(Options.FREE_MODEL == FreeModel.NONE) return false;
-        else if(Options.FREE_MODEL == FreeModel.FIRST_TP_EVER) return teleporter.location().equals(Main.teleportHandler.getTeleporter().get(0).location());
-        else if(Options.FREE_MODEL == FreeModel.FIRST_TP_OF_PLAYER) {
-            Optional<Teleporter> firstTP = Main.teleportHandler.getTeleporter().stream()
-                    .filter(e -> e.owner().equals(player.getUniqueId().toString()))
-                    .findFirst();
-
-            System.out.println("present: " + firstTP.isPresent());
-            return firstTP.isPresent() && teleporter.location().equals(firstTP.get().location());
-        }
-        return false;
-    }
-
-    public List<String> getPlayerNamesThatCreatedTeleporter() {
-        return Main.teleportHandler.getTeleporter()
-                .stream()
-                .map(e -> Bukkit.getPlayer(UUID.fromString(e.owner())))
-                .filter(e -> e != null)
-                .distinct()
-                .map(Player::getName)
-                .sorted()
-                .toList();
-    }
-
     private int getMaxPage() {
         return teleporters.size() / (3 * 9);
     }
 
-    private double calculateDistance(Teleporter tp) {
-        return tp.sameDimension(player.getLocation())?
-                tp.location().distance(player.getLocation()):
-                (Options.PRICE_ENDS_AT_DISTANCE);
-    }
-
     private int calculatePrice(Teleporter tp) {
-        double distance = calculateDistance(tp);
+        double distance = TeleporterHandler.calculateDistance(tp, player);
         int price = 0;
 
         if(Options.PAY_FOR_TELEPORT) {
@@ -283,7 +252,7 @@ public class TeleporterSelectGUI implements GUI {
             if(!tp.sameDimension(player.getLocation())) price = Options.INTERDIMENSIONAL_TRAVEL_COST;
 
             if(openedFromCommand) {
-                float modifier = Options.TP_COMMAND_COST;
+                double modifier = Options.TP_COMMAND_COST;
 
                 if(modifier > 0 && modifier <= 1) {
                     price = (int) Math.ceil((1.0f + modifier) * price);
@@ -293,8 +262,11 @@ public class TeleporterSelectGUI implements GUI {
             }
         }
 
-        if (matchesFreeModel(tp)) {
-            price = (int) Math.round(price * Options.FREE_MODIFIER);
+        if (Options.FREE_MODEL.meetsCheck(tp, player)) {
+            if(price > 0) {
+                price = (int) Math.round(price * Options.FREE_MODIFIER);
+                if(openedFromCommand) price += Options.ABSOLUTE_TP_COMMAND_COST_FOR_FREE_MODEL;
+            }
         }
 
         return price;

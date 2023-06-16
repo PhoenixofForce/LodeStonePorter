@@ -17,8 +17,9 @@ public class Options {
     public static boolean ALLOW_TP_IN_END = true;
     public static boolean ALLOW_TP_IN_CUSTOM = false;
 
-    public static float TP_COMMAND_COST = 0.25f;
     public static boolean ALLOW_TP_COMMAND = true;
+    public static double TP_COMMAND_COST = 0.25;//0 for disable (0,1] for relative increase, (1, infty] for absolute increase TODO: split, and have enum funtions MIN; MAX; BOTH, ...
+    public static int ABSOLUTE_TP_COMMAND_COST_FOR_FREE_MODEL = 2;
 
     public static boolean PRIVATE_TP = false;
 
@@ -46,8 +47,9 @@ public class Options {
         ALLOW_TP_IN_END = (boolean) config.get("tpsEnd", ALLOW_TP_IN_END);
         ALLOW_TP_IN_CUSTOM = (boolean) config.get("tpsCustom", ALLOW_TP_IN_CUSTOM);
 
-        TP_COMMAND_COST = (float) ((double) config.get("tpCommandCost", TP_COMMAND_COST));
         ALLOW_TP_COMMAND = (boolean) config.get("tpCommand", ALLOW_TP_COMMAND);
+        TP_COMMAND_COST = (double) config.get("tpCommandCost", TP_COMMAND_COST);
+        ABSOLUTE_TP_COMMAND_COST_FOR_FREE_MODEL = (int) config.get("absoluteTPCommandCostForFreeModel", ABSOLUTE_TP_COMMAND_COST_FOR_FREE_MODEL);
 
         PRIVATE_TP = (boolean) config.get("privateTps", PRIVATE_TP);
 
@@ -76,8 +78,9 @@ public class Options {
         config.set("tpsEnd", ALLOW_TP_IN_END);
         config.set("tpsCustom", ALLOW_TP_IN_CUSTOM);
 
-        config.set("tpCommandCost", TP_COMMAND_COST);
         config.set("tpsCustom", ALLOW_TP_COMMAND);
+        config.set("tpCommandCost", TP_COMMAND_COST);
+        config.set("absoluteTPCommandCostForFreeModel", ABSOLUTE_TP_COMMAND_COST_FOR_FREE_MODEL);
 
         config.set("privateTps", PRIVATE_TP);
 

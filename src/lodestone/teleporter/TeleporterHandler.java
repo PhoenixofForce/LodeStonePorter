@@ -1,13 +1,21 @@
 package lodestone.teleporter;
 
 import lodestone.ChatUtil;
+import lodestone.Options;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class TeleporterHandler {
 
@@ -21,6 +29,8 @@ public class TeleporterHandler {
 
     public void addTeleporter(Teleporter teleporter) {
         this.teleporter.add(teleporter);
+        OfflinePlayer owner = Bukkit.getPlayer(UUID.fromString(teleporter.owner()));
+        cache.add(owner);
     }
 
     public Optional<Teleporter> deleteTeleporter(Location l) {
@@ -48,7 +58,11 @@ public class TeleporterHandler {
         return teleporter.size();
     }
 
-    public void save(FileConfiguration config) {
+    public void save(FileConfiguration configIgnored) {
+        File dataFolder = new File("plugins/" + ChatUtil.PLUGIN_NAME + "/");
+        File tpFile = new File(dataFolder, "tps.yml");
+        YamlConfiguration config = new YamlConfiguration();
+
         config.set("tpCount", getAmount());
 
         for(int i = 0; i < getAmount(); i++) {
@@ -56,17 +70,56 @@ public class TeleporterHandler {
             config.set("item_" + i, getByIndex(i).displayItem());
             config.set("owner_" + i, getByIndex(i).owner());
         }
+        try {
+            config.save(tpFile);
+        } catch (IOException e) {
+            System.out.println("!!!!!!!!!!!!! Could not save teleport data !!!!!!!!!!!!!!!!!!!!!!!!!");
+        }
     }
 
-    public void load(FileConfiguration config) {
-        int count = (int) config.get("tpCount", 0);
+    public void load(FileConfiguration pluginConfig) {
+        File dataFolder = new File("plugins/" + ChatUtil.PLUGIN_NAME + "/");
+        File tpFile = new File(dataFolder, "tps.yml");
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(tpFile);
 
-        for(int i = 0; i < count; i++) {
-            Location l = (Location) config.get("location_" + i);
-            ItemStack s = (ItemStack) config.get("item_" + i);
-            String o = (String) config.get("owner_" + i);
+        if(pluginConfig.contains("tpCount")) {
+            int count = (int) pluginConfig.get("tpCount", 0);
+            pluginConfig.set("tpCount", null);
 
-            addTeleporter(new Teleporter(s, l, o));
+            for(int i = 0; i < count; i++) {
+                Location location = (Location) pluginConfig.get("location_" + i);
+                ItemStack itemDisplay = (ItemStack) pluginConfig.get("item_" + i);
+                String owner = (String) pluginConfig.get("owner_" + i);
+
+                pluginConfig.set("location_" + i, null);
+                pluginConfig.set("item_" + i, null);
+                pluginConfig.set("owner_" + i, null);
+
+                addTeleporter(new Teleporter(itemDisplay, location, owner));
+            }
         }
+
+        if(config.contains("tpCount")) {
+            int count = (int) config.get("tpCount", 0);
+
+            for(int i = 0; i < count; i++) {
+                Location location = (Location) config.get("location_" + i);
+                ItemStack itemDisplay = (ItemStack) config.get("item_" + i);
+                String owner = (String) config.get("owner_" + i);
+
+                addTeleporter(new Teleporter(itemDisplay, location, owner));
+            }
+        }
+    }
+
+    private List<OfflinePlayer> cache = new ArrayList<>();
+    public List<OfflinePlayer> getCreatorList() {
+        return cache;
+    }
+
+    public static double calculateDistance(Teleporter tp, Player player) {
+        return tp.sameDimension(player.getLocation())?
+                tp.location().distance(player.getLocation()):
+                (Options.PRICE_ENDS_AT_DISTANCE);
     }
 }
