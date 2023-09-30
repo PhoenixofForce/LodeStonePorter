@@ -53,7 +53,7 @@ public class TeleporterSelectGUI implements GUI {
                 )
                 .filter(tp ->
                         currentPlayerFilter == -1 ||
-                                Main.teleportHandler.getCreatorList().get(currentPlayerFilter).equals(Bukkit.getPlayer(UUID.fromString(tp.owner())))
+                                Main.teleportHandler.getCreatorList().get(currentPlayerFilter).getUniqueId().toString().equals(tp.owner())
                 )
                 .sorted((o1, o2) -> sortingStyle.sort(player, o1, o2))
                 .toList();
@@ -103,7 +103,10 @@ public class TeleporterSelectGUI implements GUI {
 
             else if(event.isLeftClick()) {
                 currentPlayerFilter += 1;
+                System.out.println(currentPlayerFilter + " " + playerNames.size());
                 if(currentPlayerFilter >= playerNames.size()) currentPlayerFilter = -1;
+                System.out.println(currentPlayerFilter + " " + playerNames.size());
+                System.out.println("---------------");
             }
 
             player.openInventory(new TeleporterSelectGUI(this).getInventory());

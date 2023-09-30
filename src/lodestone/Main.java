@@ -28,7 +28,7 @@ public class Main extends JavaPlugin implements Listener {
 
 	/* TODO:
 	   - [ ] success effect
-	   - [ ] teleport selector with items for scrolling, display page in title, inventory larger?
+	   - [x] teleport selector with items for scrolling, display page in title, inventory larger?
 	   - [ ] particles for active teleporter
 	   - [x] chat messages
 	   - [x] load booleans from config
@@ -41,7 +41,7 @@ public class Main extends JavaPlugin implements Listener {
 	   =>[ ] only allow to right click teleporter created by player?
 	   - [x] check tps on load
 	   - [x] allow interdimensional travel
-	   - [ ] filter for menu
+	   - [x] filter for menu
 	   - [ ] fix permissions in plugin.yml
 	   - [x] save teleporter in own file
 	   =>[x] only save config when changed/ not on reload, restart
@@ -125,6 +125,7 @@ public class Main extends JavaPlugin implements Listener {
 				return;
 			}
 
+			event.setCancelled(true);
 			openTeleportSelector(player, 0);
 			return;
 		}

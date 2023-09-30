@@ -29,8 +29,10 @@ public class TeleporterHandler {
 
     public void addTeleporter(Teleporter teleporter) {
         this.teleporter.add(teleporter);
-        OfflinePlayer owner = Bukkit.getPlayer(UUID.fromString(teleporter.owner()));
-        cache.add(owner);
+        OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(teleporter.owner().trim()));
+        if(owner != null && !cache.contains(owner)) {
+            cache.add(owner);
+        }
     }
 
     public Optional<Teleporter> deleteTeleporter(Location l) {
@@ -73,7 +75,7 @@ public class TeleporterHandler {
         try {
             config.save(tpFile);
         } catch (IOException e) {
-            System.out.println("!!!!!!!!!!!!! Could not save teleport data !!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.out.println("Couldnt save teleport data");
         }
     }
 
