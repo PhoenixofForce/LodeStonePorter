@@ -46,6 +46,7 @@
 			<id>github</id>
 			<name>Github Packages</name>
 			<url>https://maven.pkg.github.com/PhoenixofForce/LodeStonePorter</url>
+			<layout>default</layout>
 		</repository>
 	</distributionManagement>
 </project>
