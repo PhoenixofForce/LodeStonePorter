@@ -5,8 +5,8 @@ name: Maven Package
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - "master"
 
 jobs:
   build:
