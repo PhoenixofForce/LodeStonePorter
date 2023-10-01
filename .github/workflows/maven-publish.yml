@@ -34,4 +34,4 @@ jobs:
           repo_token: "${{ secrets.TOKEN }}"
           prerelease: false
           files: |
-            target/*.jar
+            LodeStonePorter/target/*.jar
