@@ -12,7 +12,7 @@ public enum SortingStyles {
     PLAYER_NAME((p, tp1, tp2) -> tp1.owner().compareTo(tp2.owner())),
     TELEPORTER_NAME((p, tp1, tp2) -> ItemChanger.getName(tp1.displayItem()).compareTo(ItemChanger.getName(tp2.displayItem())));
 
-    private SortingFunctionFunction sorter;
+    private final SortingFunctionFunction sorter;
     SortingStyles(SortingFunctionFunction sorter) {
         this.sorter = sorter;
     }

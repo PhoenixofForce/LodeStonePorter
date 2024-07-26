@@ -1,6 +1,9 @@
 package lodestone.inventories;
 
-import lodestone.*;
+import lodestone.ChatUtil;
+import lodestone.ItemChanger;
+import lodestone.Main;
+import lodestone.Options;
 import lodestone.teleporter.Teleporter;
 import lodestone.teleporter.TeleporterHandler;
 import org.bukkit.*;
@@ -11,14 +14,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.List;
-import java.util.UUID;
 
 public class TeleporterSelectGUI implements GUI {
 
-    private int PAGE_BACK_INDEX = 36;
-    private int PAGE_NEXT_INDEX = 37;
-    private int SORTING_INDEX = 39;
-    private int PLAYER_FILTER_INDEX = 40;
+    private final int PAGE_BACK_INDEX = 36;
+    private final int PAGE_NEXT_INDEX = 37;
+    private final int SORTING_INDEX = 39;
+    private final int PLAYER_FILTER_INDEX = 40;
 
     private List<Teleporter> teleporters;
 
@@ -138,7 +140,9 @@ public class TeleporterSelectGUI implements GUI {
                 return;
             }
 
-            if(player.getGameMode() != GameMode.CREATIVE) player.getInventory().removeItem(new ItemStack(Options.CURRENCY, price));
+            if(player.getGameMode() != GameMode.CREATIVE && price > 0) {
+                player.getInventory().removeItem(new ItemStack(Options.CURRENCY, price));
+            }
         }
 
         player.teleport(

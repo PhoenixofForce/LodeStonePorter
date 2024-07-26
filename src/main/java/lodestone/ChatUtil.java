@@ -46,6 +46,8 @@ public class ChatUtil {
 	}
 
 	public static ChatColor getDimensionColor(Location l) {
+		if(l.getWorld() == null) return ChatColor.DARK_PURPLE;
+
 		return switch (l.getWorld().getEnvironment()) {
 			case NORMAL -> ChatColor.GREEN;
 			case NETHER -> ChatColor.DARK_RED;

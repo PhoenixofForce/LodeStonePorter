@@ -15,6 +15,7 @@ public record Teleporter (
 	}
 
 	public boolean sameDimension(Location location) {
+		if(location.getWorld() == null || this.location.getWorld() == null) return location.getWorld() == this.location.getWorld();
 		return location.getWorld().getEnvironment() == this.location.getWorld().getEnvironment();
 	}
 

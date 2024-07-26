@@ -20,16 +20,15 @@ import java.util.Optional;
 
 public class EventListener implements Listener {
 
-    private TeleporterHandler teleportHandler;
+    private final TeleporterHandler teleportHandler;
     public EventListener(TeleporterHandler teleporterHandler) {
         this.teleportHandler = teleporterHandler;
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if(event.getInventory() != null &&
-                event.getInventory().getHolder() != null &&
-                event.getInventory().getHolder() instanceof GUI gui) {
+        if(event.getInventory().getHolder() != null &&
+            event.getInventory().getHolder() instanceof GUI gui) {
 
             gui.onInventoryClick(event);
         }
@@ -73,12 +72,6 @@ public class EventListener implements Listener {
         }
     }
 
-    /**
-     *
-     * @param location
-     * @param player
-     * @return true if the event should be cancelled
-     */
     private boolean blockDestroyed(Location location, Optional<Player> player) {
         Optional<Teleporter> removedTp = teleportHandler.getByLocation(location);
 
@@ -103,7 +96,9 @@ public class EventListener implements Listener {
             ItemChanger.removeEnchantmentGlow(droppedItem);
             ItemChanger.changeName(droppedItem, e -> null);
 
-            location.getWorld().dropItemNaturally(location, droppedItem);
+            if(location.getWorld() != null) {
+                location.getWorld().dropItemNaturally(location, droppedItem);
+            }
         }
 
         return false;

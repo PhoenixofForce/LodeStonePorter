@@ -1,7 +1,7 @@
 name: LodestonePorter
-version: 1.0
+version: 1.1.1
 author: PhoenixofForce
-api-version: 1.19
+api-version: 1.21
 main: lodestone.Main
 commands:
   lp:

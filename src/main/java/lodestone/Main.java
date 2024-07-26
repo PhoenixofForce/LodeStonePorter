@@ -1,14 +1,9 @@
 package lodestone;
 
-import java.util.List;
-import java.util.logging.Level;
-
-import lodestone.inventories.GUI;
 import lodestone.inventories.SortingStyles;
 import lodestone.inventories.TeleporterSelectGUI;
 import lodestone.teleporter.Teleporter;
 import lodestone.teleporter.TeleporterHandler;
-
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -17,12 +12,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
-import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.List;
+import java.util.logging.Level;
 
 public class Main extends JavaPlugin implements Listener {
 
@@ -129,7 +126,7 @@ public class Main extends JavaPlugin implements Listener {
 			openTeleportSelector(player, 0);
 			return;
 		}
-		if(!player.isSneaking() || playerHoldItem.getAmount() <= 0 || teleporterExists) return;
+		if(!player.isSneaking() || playerHoldItem.getAmount() <= 0) return;
 
 		//Exit when no permission for creating tp
 		if(!(player.hasPermission("createTP") || player.isOp())) {
@@ -161,7 +158,7 @@ public class Main extends JavaPlugin implements Listener {
 	public boolean onCommand(CommandSender sender, Command command, String commandlabel, String[] args) {
 
 		if (commandlabel.equalsIgnoreCase("lp")) {
-			if(!(sender instanceof Player)) {
+			if(!(sender instanceof Player playerSender)) {
 				ChatUtil.sendErrorMessage(sender, "You are not a player");
 				return true;
 			}
@@ -173,7 +170,6 @@ public class Main extends JavaPlugin implements Listener {
 			}
 
 
-			Player playerSender = (Player) sender;
 			openTeleportSelector(playerSender, 0, SortingStyles.CREATION_DATE, true);
 
 			return true;
@@ -183,7 +179,12 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	private ItemStack createTeleporterIcon(ItemStack item, Location clickedLocation, Player player) {
-		String dimensionString = Strings.capitalize(clickedLocation.getWorld().getEnvironment().name());
+		World.Environment dimension = World.Environment.CUSTOM;
+		if(clickedLocation.getWorld() != null) {
+			dimension = clickedLocation.getWorld().getEnvironment();
+		}
+
+		String dimensionString = Strings.capitalize(dimension.name());
 		dimensionString = ChatUtil.getDimensionColor(clickedLocation).toString() + ChatColor.BOLD + dimensionString + ChatColor.RESET;
 
 		ItemStack displayItem = item.clone();
@@ -200,7 +201,11 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	private boolean isPlacingTPInThisDimensionAllowed(Location location) {
-		World.Environment dimension = location.getWorld().getEnvironment();
+		World.Environment dimension = World.Environment.CUSTOM;
+		if(location.getWorld() != null) {
+			dimension = location.getWorld().getEnvironment();
+		}
+
 		if(dimension == World.Environment.NORMAL && !Options.ALLOW_TP_IN_OVERWORLD) return false;
 		if(dimension == World.Environment.NETHER && !Options.ALLOW_TP_IN_NETHER) return false;
 		if(dimension == World.Environment.THE_END && !Options.ALLOW_TP_IN_END) return false;

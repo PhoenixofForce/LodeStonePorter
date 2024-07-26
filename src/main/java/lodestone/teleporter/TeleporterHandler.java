@@ -114,7 +114,7 @@ public class TeleporterHandler {
         }
     }
 
-    private List<OfflinePlayer> cache = new ArrayList<>();
+    private final List<OfflinePlayer> cache = new ArrayList<>();
     public List<OfflinePlayer> getCreatorList() {
         return cache;
     }
